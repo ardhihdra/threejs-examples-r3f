@@ -16,4 +16,15 @@
     padding: 0;
     overflow: hidden;
   }
+
+  .stats {
+    position: absolute !important;
+    top: 0 !important;
+    left: initial !important;
+  }
+
+  a {
+    color: blue;
+    cursor: pointer;
+  }
 }

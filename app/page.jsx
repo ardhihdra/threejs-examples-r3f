@@ -1,11 +1,11 @@
 'use client'
 
+import { Stats } from '@react-three/drei'
 import dynamic from 'next/dynamic'
-import { Suspense } from 'react'
+import Image from 'next/image'
+import { Suspense, useRef, useState } from 'react'
 
-const Logo = dynamic(() => import('@/components/canvas/Examples').then((mod) => mod.Logo), { ssr: false })
 const Dog = dynamic(() => import('@/components/canvas/Examples').then((mod) => mod.Dog), { ssr: false })
-const Duck = dynamic(() => import('@/components/canvas/Examples').then((mod) => mod.Duck), { ssr: false })
 const View = dynamic(() => import('@/components/canvas/View').then((mod) => mod.View), {
   ssr: false,
   loading: () => (
@@ -22,61 +22,108 @@ const View = dynamic(() => import('@/components/canvas/View').then((mod) => mod.
   ),
 })
 const Common = dynamic(() => import('@/components/canvas/View').then((mod) => mod.Common), { ssr: false })
+const LittlestTokyo = dynamic(() => import('@/components/canvas/LittlestTokyo').then((mod) => mod.LittlestTokyo), { ssr: false })
+const Soldier = dynamic(() => import('@/components/canvas/Soldier').then((mod) => mod.Soldier), { ssr: false })
 
 export default function Page() {
+  const [scene, setScene] = useState('littlePuppy')
+
   return (
     <>
-      <div className='mx-auto flex w-full flex-col flex-wrap items-center md:flex-row  lg:w-4/5'>
+      <div className='mx-auto flex w-full flex-row flex-wrap items-center md:flex-row'>
         {/* jumbo */}
-        <div className='flex w-full flex-col items-start justify-center p-12 text-center md:w-2/5 md:text-left'>
-          <p className='w-full uppercase'>Next + React Three Fiber</p>
-          <h1 className='my-4 text-5xl font-bold leading-tight'>Next 3D Starter</h1>
-          <p className='mb-8 text-2xl leading-normal'>A minimalist starter for React, React-three-fiber and Threejs.</p>
+        <div className='flex h-screen w-1/5 flex-col items-start justify-center  bg-stone-900 text-center md:text-left '>
+          <div className='min-w-full border-b border-stone-600 p-4 font-bold text-blue-600'>
+            three.js
+          </div>
+          <div className='min-w-full border-b border-stone-600 p-4 font-bold text-blue-600'>
+            <input placeholder='Search...' className='w-full bg-stone-900 p-2 text-white'></input>
+          </div>
+          <div className='h-full min-w-full overflow-y-auto p-3 text-stone-300'>
+            <div className='mb-4 text-blue-600'>webgl</div>
+            {
+              Object.keys(SCENE_LIST).map((key, idx) => {
+                const sl = SCENE_LIST[key]
+                return (
+                  <div
+                    key={idx}
+                    className={`relative mx-auto my-12 w-full cursor-pointer rounded-md bg-red-400 sm:my-4 ${key === scene ? 'border-2 border-blue-500': ''}`}
+                    onClick={() => setScene(key)}
+                  >
+                    <Image src={sl.img} alt='backdrop' width='312' height='180' className='inset-0 rounded-md'/>
+                    <div className='absolute bottom-0 left-0 z-10 w-full rounded-b-md bg-stone-700 p-2 text-xs sm:text-lg'>{sl.title}</div>
+                  </div>
+                )
+              })
+            }
+          </div>
         </div>
-
-        <div className='w-full text-center md:w-3/5'>
-          <View className='flex h-96 w-full flex-col items-center justify-center'>
-            <Suspense fallback={null}>
-              <Logo route='/blob' scale={0.6} position={[0, 0, 0]} />
-              <Common />
-            </Suspense>
-          </View>
-        </div>
-      </div>
-
-      <div className='mx-auto flex w-full flex-col flex-wrap items-center p-12 md:flex-row  lg:w-4/5'>
-        {/* first row */}
-        <div className='relative h-48 w-full py-6 sm:w-1/2 md:my-12 md:mb-40'>
-          <h2 className='mb-3 text-3xl font-bold leading-none text-gray-800'>Events are propagated</h2>
-          <p className='mb-8 text-gray-600'>Drag, scroll, pinch, and rotate the canvas to explore the 3D scene.</p>
-        </div>
-        <div className='relative my-12 h-48 w-full py-6 sm:w-1/2 md:mb-40'>
-          <View orbit className='relative h-full  sm:h-48 sm:w-full'>
-            <Suspense fallback={null}>
-              <Dog scale={2} position={[0, -1.6, 0]} rotation={[0.0, -0.3, 0]} />
-              <Common color={'lightpink'} />
-            </Suspense>
-          </View>
-        </div>
-        {/* second row */}
-        <div className='relative my-12 h-48 w-full py-6 sm:w-1/2 md:mb-40'>
-          <View orbit className='relative h-full animate-bounce sm:h-48 sm:w-full'>
-            <Suspense fallback={null}>
-              <Duck route='/blob' scale={2} position={[0, -1.6, 0]} />
-              <Common color={'lightblue'} />
-            </Suspense>
-          </View>
-        </div>
-        <div className='w-full p-6 sm:w-1/2'>
-          <h2 className='mb-3 text-3xl font-bold leading-none text-gray-800'>Dom and 3D are synchronized</h2>
-          <p className='mb-8 text-gray-600'>
-            3D Divs are renderer through the View component. It uses gl.scissor to cut the viewport into segments. You
-            tie a view to a tracking div which then controls the position and bounds of the viewport. This allows you to
-            have multiple views with a single, performant canvas. These views will follow their tracking elements,
-            scroll along, resize, etc.
-          </p>
-        </div>
+        {SCENE_LIST[scene].jsx}
       </div>
     </>
   )
+}
+
+function NormalView({orbit, children, title}) {
+  const sceneRef = useRef()
+
+  return (
+    <div ref={sceneRef} className='flex-1 border-0 p-0 text-center'>
+      <View orbit={orbit} className='relative h-screen w-full border-0 p-0'>
+        {children}
+        <Stats parent={sceneRef} className='stats'/>
+      </View>
+      {title}
+    </div>
+  )
+}
+
+const SCENE_LIST = {
+  littlePuppy: {
+    title: 'R3F',
+    img: '/img/dog.png',
+    jsx: (
+      <NormalView>
+        <Suspense fallback={null}>
+          <Dog scale={2} position={[0, -1.6, 0]} rotation={[0.0, -0.3, 0]} />
+          <Common color={'lightpink'} />
+        </Suspense>
+      </NormalView>
+    ),
+  },
+  littlestTokyo: {
+    title: 'animation / keyframes',
+    img: '/img/littlest-tokyo.jpeg',
+    jsx: (
+      <NormalView
+        title={(
+          <div className='absolute top-0 z-10 box-border w-full select-none p-2 text-center'>
+            <a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> webgl - animation - keyframes<br/>
+            Model: <a href="https://artstation.com/artwork/1AGwX" target="_blank" rel="noopener">Littlest Tokyo</a> by
+            <a href="https://artstation.com/glenatron" target="_blank" rel="noopener">Glen Fox</a>, CC Attribution.
+          </div>
+        )}
+      >
+        <LittlestTokyo scale={0.01} position={[1, 1, 0]} />
+      </NormalView>
+    ),
+  },
+  soldier: {
+    title: 'animation / skinning / blending',
+    img: '/img/robot.jpeg',
+    jsx: (
+      <NormalView
+        orbit={false}
+        title={(
+          <div className='absolute top-0 z-10 box-border w-full select-none p-2 text-center'>
+              <a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> - Skeletal Animation Blending
+              (model from <a href="https://www.mixamo.com/" target="_blank" rel="noopener">mixamo.com</a>)<br/>
+              Note: crossfades are possible with blend weights being set to (1,0,0), (0,1,0) or (0,0,1)
+          </div>
+        )}
+      >
+        <Soldier position={[0, 0, 0]} />
+      </NormalView>
+    )
+  }
 }
