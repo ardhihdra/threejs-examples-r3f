@@ -96,6 +96,7 @@ const SCENE_LIST = {
     img: '/img/littlest-tokyo.jpeg',
     jsx: (
       <NormalView
+        orbit
         title={(
           <div className='absolute top-0 z-10 box-border w-full select-none p-2 text-center'>
             <a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> webgl - animation - keyframes<br/>
